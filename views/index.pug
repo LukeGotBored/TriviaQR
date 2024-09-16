@@ -1,0 +1,41 @@
+doctype html
+html(lang="en")
+    head
+        meta(charset="UTF-8")
+        meta(name="viewport" content="width=device-width, initial-scale=1.0")
+        title TriviaQR
+        link(rel="preconnect" href="https://fonts.googleapis.com")
+        link(rel="preconnect" href="https://fonts.gstatic.com" crossorigin)
+        link(href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet")
+        link(rel="stylesheet" href="./style/style.css")
+        script(src="https://cdn.socket.io/3.1.3/socket.io.min.js" integrity="sha384-cPwlPLvBTa3sKAgddT6krw0cJat7egBga3DJepJyrLl4Q9/5WLra3rrnMcyTyOnh" crossorigin="anonymous")
+        script(src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js")
+        script(type="module" src="./script/utils.js")
+        script(type="module" src="./script/main.js" defer)
+
+    body
+        .screen#loading
+            #logo
+                img(src="./assets/logo.png" alt="TriviaQR" width="256")
+            div By <b>Riccardi Andrea</b> and <b>Suriani Gianluca</b>
+        .screen#lobby
+                div#grid
+                    div#top-left
+                        img(src="./assets/logo-inline-center.png" alt="TriviaQR" width="256")
+                    div#top-right
+                    div#bottom-left
+                        img#lobbyQR
+                        div#desc
+                            div#desc-top TO JOIN THE GAME 
+                            div#desc-bottom SCAN THE QR CODE
+                    div#bottom-right
+                        div#characters
+        .screen#game 
+        
+        #bottom-bar
+            #left
+            #center
+            #right 
+                div#loading-circle
+        #roomid #{roomId}
+        #transition-overlay
