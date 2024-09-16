@@ -1,6 +1,9 @@
+<p align="center">
+
+  <img src="./public/assets/logo.png" align="center" width="256px">
+  </p>
 
 <p align="center">
-  <img src="./public/assets/logo.png" align="center" width="256px">
 <b>TriviaQR</b> è un gioco educativo di trivia in cui i giocatori partecipano scansionando codici QR.<br> Questo progetto è stato sviluppato per il corso di <a href="https://www.unipg.it/didattica/corsi-di-laurea-e-laurea-magistrale/archivio/offerta-formativa-2023-24?idins=270806">Ingegneria del Software</a> dell'Università degli Studi di Perugia.
 </p>
 
