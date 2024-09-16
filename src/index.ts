@@ -47,8 +47,8 @@ interface Room {
 const rooms = new Map<string, Room>();
 
 // ----- Avatar Encoding ----- //
-const SHAPES = ['square', 'circle', 'triangle', 'pentagon'];
-const COLORS = ['red', 'green', 'blue', 'yellow'];
+const SHAPES = ['square', 'circle'];
+const COLORS = ['red', 'yellow', 'green', 'blue'];
 
 function encodeAvatar(shapeIndex: number, colorIndex: number): number {
     return (shapeIndex << 2) | colorIndex;
@@ -70,15 +70,41 @@ app.get('/', (req, res) => {
     res.render('index', { roomId });
 });
 
+app.get('/debug', (req, res) => {
+    res.render('debug', { rooms: Array.from(rooms.values()) });
+});
+
 app.get('/:room', (req, res) => {
     const roomId = req.params.room;
     const session = req.session as any;
 
     if (!rooms.has(roomId)) {
+        // Disband the session if the room doesn't exist anymore
+        if (session.roomId && session.roomId === roomId) {
+            delete session.playerId;
+            delete session.roomId;
+            delete session.playerName;
+        }
         return res.render('mobile', { title: "Room not found", message: "The room you're trying to join doesn't exist.", type: "error" });
     }
 
     const room = rooms.get(roomId)!;
+
+    // Check if the session is from a different room
+    if (session.roomId && session.roomId !== roomId) {
+        // Remove player from the previous room
+        const previousRoom = rooms.get(session.roomId);
+        if (previousRoom) {
+            previousRoom.players = previousRoom.players.filter(p => p.id !== session.playerId);
+            if (previousRoom.hostSocket) {
+                io.to(previousRoom.hostSocket).emit('player-left', session.playerId);
+            }
+        }
+        // Clear session data
+        delete session.playerId;
+        delete session.roomId;
+        delete session.playerName;
+    }
 
     if (!session.playerId) {
         const playerName = `Player ${room.players.length + 1}`; 
@@ -118,30 +144,8 @@ app.get('/:room', (req, res) => {
             roomId: roomId
         });
     }
-    
 });
 
-// TODO - Decide wether to implement this or not
-app.get('/:room/leave', (req, res) => {
-    const roomId = req.params.room;
-    const session = req.session as any;
-
-    if (session.roomId && session.playerId) {
-        const room = rooms.get(session.roomId);
-        if (room) {
-            room.players = room.players.filter(p => p.id !== session.playerId);
-            if (room.hostSocket) {
-                io.to(room.hostSocket).emit('player-left', session.playerId);
-            }
-        }
-    }
-
-    delete session.roomId;
-    delete session.playerId;
-    delete session.playerName;
-
-    res.redirect('/');
-});
 
 // ----- Socket.IO ----- //
 io.on('connection', (socket: Socket) => {

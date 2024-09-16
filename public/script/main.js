@@ -1,6 +1,6 @@
 import { getTip } from './utils.js';
 
-const LOBBY_TIMER_DURATION = 20000; // ms
+const LOBBY_TIMER_DURATION = 21000; // ms (this is 20s + 1s for the transition)
 const TRANSITION_DURATION = 400; // ms
 
 class Screen {
@@ -43,16 +43,18 @@ class LobbyScreen extends Screen {
 
     updateBottomBar() {
         this.leftBar.innerHTML = `<div id="bottom-desc">Lobby Code:</div><div id="bottom-title">${this.gameManager.roomId}</div>`;
-        this.rightBar.innerHTML = `<div id="bottom-desc">Time Remaining:</div><div id="bottom-title" id="lobby-timer">${this.gameManager.lobbyTimerDuration / 1000}s</div>`;
+        this.rightBar.innerHTML = `<div id="bottom-desc">Time Remaining:</div><div id="bottom-title"><div id="lobby-timer">Waiting for players...</div></div>`;
     }
 
     updatePlayerList() {
-        const playerListElement = document.getElementById('player-list');
-        if (playerListElement) {
-            playerListElement.innerHTML = this.gameManager.players.map(player => 
-                `<div>${player.name}</div>`
-            ).join('');
-        }
+        const playerListElement = document.getElementById('characters');
+        playerListElement.innerHTML = '';
+        this.gameManager.players.forEach(player => {
+            const playerElement = document.createElement('div');
+            playerElement.classList.add('character');
+            playerElement.textContent = player.name;
+            playerListElement.appendChild(playerElement);
+        });
     }
 
     updateLobbyQR() {
@@ -72,7 +74,8 @@ class GameScreen extends Screen {
     }
 
     updateBottomBar() {
-        // TODO - Implement game-specific bottom bar updates
+        this.leftBar.innerHTML = `<div id="bottom-desc">Round</div><div id="bottom-title" id="game-timer">1/3</div>`;
+        this.rightBar.innerHTML = ``;
     }
 
     // TODO - Add game-specific methods here
@@ -113,6 +116,8 @@ class GameManager {
             if (this.currentScreen === this.screens.lobby) {
                 this.screens.lobby.updatePlayerList();
             }
+
+            console.log(`${player.name} joined the game!`);
         });
 
         // TODO
@@ -180,7 +185,7 @@ class GameManager {
     resetLobbyTimer() {
         clearInterval(this.lobbyTimer);
         this.lobbyTimerDuration = LOBBY_TIMER_DURATION;
-        if (this.currentScreen === this.screens.lobby) {
+        if (this.currentScreen === this.screens.lobby && this.players.length > 1) {
             this.startLobbyTimer();
         }
     }
@@ -188,7 +193,8 @@ class GameManager {
     updateLobbyTimer() {
         const timerElement = document.getElementById('lobby-timer');
         if (timerElement) {
-            timerElement.textContent = `${this.lobbyTimerDuration / 1000}s`;
+            // restart the animation
+            timerElement.innerHTML = `${this.lobbyTimerDuration / 1000}s`;
         }
     }
 
@@ -210,7 +216,6 @@ class GameManager {
         console.log("Game started!");
     }
 }
-
 
 document.addEventListener('DOMContentLoaded', () => {
     const game = new GameManager();

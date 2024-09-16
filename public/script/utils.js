@@ -25,3 +25,35 @@ export const getTip = () => {
 
     return tips[Math.floor(Math.random() * tips.length)];
 }
+
+export const characterBuilder = (characterID, emotion = 0) => {
+    // characterID is a 2-digit string where the first digit is the head shape (0-3) and the second is the color (0-3)
+    let head = characterID[0];
+    let color = characterID[1];
+
+    // if(head < 0 || head > 3 || color < 0 || color > 3 || emotion < 0 || emotion > 2) {
+    //     console.error('Invalid character ID: ', characterID);
+    //     return `Invalid character ID`;
+    // }
+
+    // Create a new div element called character
+    let character = document.createElement('div');
+    character.classList.add('character');
+
+    // Build the inner HTML structure for the character
+    character.innerHTML = `
+        <div class="body-container">
+            <img src="./assets/player/body.svg" class="body" alt="body">
+            <div class="head-container">
+                <img src="./assets/player/head/head-${head}.svg" class="head" alt="head">
+                <div class="face-container">
+                    <img src="./assets/player/face/face-${emotion}.svg" class="face" alt="face">
+                </div>
+            </div>
+        </div>`;
+
+    // Apply color class
+    character.classList.add(`color-${color}`);
+
+    return character;
+};
