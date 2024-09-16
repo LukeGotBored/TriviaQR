@@ -4,8 +4,8 @@
   "type": "module",
   "version": "1.0.0",
   "scripts": {
-    "start": "bun run src/index.ts",
-    "dev": "bun run src/index.ts --watch"
+    "start": "bun src/index.ts",
+    "dev": "bun --watch src/index.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"
@@ -14,16 +14,26 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@elysiajs/cookie": "^0.8.0",
+    "@elysiajs/html": "^1.1.1",
+    "@elysiajs/jwt": "^1.1.1",
+    "@elysiajs/static": "^1.1.1",
     "@types/express": "^4.17.21",
+    "@types/express-session": "^1.18.0",
     "@types/qrcode": "^1.5.5",
+    "@types/uuid": "^10.0.0",
     "axios": "^1.7.5",
     "chalk": "^5.3.0",
     "crypto": "^1.0.1",
     "dotenv": "^16.4.5",
+    "elysia": "^1.1.12",
+    "elysia-session": "^0.0.6",
     "express": "^4.19.2",
     "http": "^0.0.1-security",
+    "pug": "^3.0.3",
     "qrcode": "^1.5.4",
     "socket.io": "^4.7.5",
+    "uuid": "^10.0.0",
     "winston": "^3.14.2"
   }
 }
