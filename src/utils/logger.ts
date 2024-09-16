@@ -1,34 +1,33 @@
-/**
- * @file logger.ts
- * @description Questo file è un wrapper per il modulo winston, che fornisce funzionalità di logging.
- * @module utils/logger
- * @version 1.0.0
- * 
- * @author @LukeGotBored
- * 
- * @license MIT
- * 
- * @classdesc Questa classe è un singleton che fornisce un'interfaccia per il modulo winston.
- **/
-
 import winston from 'winston';
+import path from 'path';
 
 class Logger {
     private static instance: Logger;
     private logger: winston.Logger;
 
     private constructor() {
+        const logFormat = winston.format.printf(({ level, message, timestamp }) => {
+            const colorizer = winston.format.colorize();
+            return colorizer.colorize(level, `[${timestamp}] [${level.toUpperCase()}] ${message}`);
+        });
+
         this.logger = winston.createLogger({
-            level: 'info',
+            level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
             format: winston.format.combine(
                 winston.format.timestamp(),
-                winston.format.printf(({ level, message, timestamp }) => {
-                    return `[${timestamp}] [${level.toUpperCase()}] ${message}`;
-                })
+                logFormat
             ),
             transports: [
                 new winston.transports.Console(),
+                new winston.transports.File({ filename: path.join(__dirname, 'app.log') })
             ],
+        });
+
+        winston.addColors({
+            error: 'red',
+            warn: 'yellow',
+            info: 'green',
+            debug: 'blue'
         });
     }
 
