@@ -1,0 +1,21 @@
+doctype html
+html(lang="en")
+
+    head
+        meta(charset="UTF-8")
+        meta(name="viewport", content="width=device-width, initial-scale=1.0")
+        title Trivia Game Player
+        script(src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.js")
+        link(rel="preconnect", href="https://fonts.googleapis.com")
+        link(rel="preconnect", href="https://fonts.gstatic.com", crossorigin)
+        link(href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap", rel="stylesheet")
+        script(src="./script.js")
+        link(rel="stylesheet", href="./mobile/style.css")
+
+    body
+        #bundle
+            img(src=type === "success" ? "./assets/ui-stuff/yes.svg" : "./assets/ui-stuff/no.svg", alt=type === "success" ? "Right" : "Wrong")#icon
+            div#title #{title || "No title"}
+            div#message #{message || "No message"}
+            //- div#question #{question || ""}
+            div#disc You can now close this window.
