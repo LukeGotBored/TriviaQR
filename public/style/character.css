@@ -1,0 +1,29 @@
+.character {
+    width: 100px;
+    height: 200px
+}
+
+.character,.character .body-container {
+    position: relative
+}
+
+.character .body-container .face-container {
+    position: absolute;
+    top: 15%;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start
+}
+
+.character svg {
+    display: block;
+    width: 100%;
+    height: 100%
+}
+
+.character .body-container .face-container img {
+    width: 50px;
+}
