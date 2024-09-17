@@ -160,6 +160,13 @@ app.get('/room/:roomId', (req, res) => {
     const roomId = req.params.roomId;
     const session = req.session as any;
 
+    if (rooms.has(roomId)) {
+        const room = rooms.get(roomId)!;
+        if (room.players.size >= 8) {
+            return res.render('mobile', { title: "Room full", message: "Sorry, this room is already full.", type: "error" });
+        }
+    }
+
     if (!rooms.has(roomId)) {
         return res.render('mobile', { title: "Room not found", message: "The room you're trying to join doesn't exist.", type: "error" });
     }
