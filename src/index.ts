@@ -2,16 +2,16 @@ import express from 'express';
 import session from 'express-session';
 import { Socket, Server } from 'socket.io';
 import http from 'http';
-import dotenv from 'dotenv';
 import logger from './utils/logger';
+import { env } from 'bun';
 
-dotenv.config();
+
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-const sessionSecret = process.env.SESSION_SECRET || (() => {
+const sessionSecret = env.SESSION_SECRET || (() => {
     logger.warn('!! No SESSION_SECRET provided, using insecure default !!');
     return "default";
 })();
@@ -20,7 +20,7 @@ const sessionMiddleware = session({
     secret: sessionSecret,
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: process.env.NODE_ENV === 'production' }
+    cookie: { secure: env.NODE_ENV === 'production' }
 });
 
 app.use(sessionMiddleware);
@@ -346,8 +346,8 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
 });
 
 // ----- Avvio server ----- //
-const PORT = process.env.PORT || 3000;
+const PORT = env.PORT || 3000;
 server.listen(PORT, () => {
-    logger.info(`✨ Server listening on port ${PORT} in ${process.env.NODE_ENV} mode!`);
+    logger.info(`✨ Server listening on port ${PORT} in ${env.NODE_ENV} mode!`);
     logger.info(`[http://localhost:${PORT}]`);
 });
