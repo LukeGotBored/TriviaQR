@@ -9,7 +9,9 @@ html(lang="en")
         link(rel="preconnect", href="https://fonts.googleapis.com")
         link(rel="preconnect", href="https://fonts.gstatic.com", crossorigin)
         link(href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap", rel="stylesheet")
-        link(rel="stylesheet", href="./mobile/style.css")
+        base(href="/")
+        link(rel="stylesheet", href="mobile/style.css")
+        script(type="module", src="mobile/script.js") 
 
     body
         #bundle
@@ -18,3 +20,6 @@ html(lang="en")
             div#message #{message || "No message"}
             //- div#question #{question || ""}
             div#disc You can now close this window.
+            div#character
+                span#characterId(style="display: none;") #{characterId}
+                

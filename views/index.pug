@@ -7,21 +7,22 @@ html(lang="en")
         link(rel="preconnect" href="https://fonts.googleapis.com")
         link(rel="preconnect" href="https://fonts.gstatic.com" crossorigin)
         link(href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet")
-        link(rel="stylesheet" href="./style/style.css")
+        link(rel="stylesheet" href="/style/style.css")
         script(src="https://cdn.socket.io/3.1.3/socket.io.min.js" integrity="sha384-cPwlPLvBTa3sKAgddT6krw0cJat7egBga3DJepJyrLl4Q9/5WLra3rrnMcyTyOnh" crossorigin="anonymous")
         script(src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js")
-        script(type="module" src="./script/utils.js")
-        script(type="module" src="./script/main.js" defer)
+        script(type="module" src="/script/utils.js")
+        script(type="module" src="/script/main.js" defer)
 
     body
         .screen#loading
             #logo
                 img(src="./assets/logo.png" alt="TriviaQR" width="256")
-            div By <b>Riccardi Andrea</b> and <b>Suriani Gianluca</b>
+            //- div By <b>Riccardi Andrea</b> and <b>Suriani Gianluca</b>
         .screen#lobby
                 div#grid
                     div#top-left
                         img(src="./assets/logo-inline-center.png" alt="TriviaQR" width="256")
+                        div(style="padding-left: 1rem; opacity: 0.7") By <b>Riccardi Andrea</b> and <b>Suriani Gianluca</b>
                     div#top-right
                     div#bottom-left
                         img#lobbyQR
@@ -30,8 +31,32 @@ html(lang="en")
                             div#desc-bottom SCAN THE QR CODE
                     div#bottom-right
                         div#characters
+
+        .screen#intro 
+            div#round-intro 
+
         .screen#game 
-        
+            div#timer
+            div#question 
+            div#ingame-char
+            div.grid#game-grid
+                div#answer1-wrapper.answer
+                    img#answer1-qr
+                    div#answer1-text
+                div#answer2-wrapper.answer
+                    img#answer2-qr
+                    div#answer2-text
+                div#answer3-wrapper.answer
+                    img#answer3-qr
+                    div#answer3-text
+                div#answer4-wrapper.answer
+                    img#answer4-qr
+                    div#answer4-text
+        .screen#leaderboard
+            div#leaderboard-list(style='background-color: black; padding: 2rem;')
+        .screen#gameover
+
+
         #bottom-bar
             #left
             #center
