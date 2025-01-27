@@ -12,6 +12,9 @@ html(lang="en")
         base(href="/")
         link(rel="stylesheet", href="mobile/style.css")
         script(type="module", src="mobile/script.js") 
+        meta(name="format-detection" content="text/html")
+        meta(name="format-detection" content="telephone=no")
+        meta(name="dictionary" content="no")
 
     body
         #bundle
@@ -22,4 +25,4 @@ html(lang="en")
             div#disc You can now close this window.
             div#character
                 span#characterId(style="display: none;") #{characterId}
-                
+

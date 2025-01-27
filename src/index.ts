@@ -142,6 +142,19 @@ function cleanupInactiveRooms() {
 // Esegue il cleanup ogni ora
 setInterval(cleanupInactiveRooms, 60 * 60 * 1000);
 
+// Funzione (sperimentale) per rilevare i bot tramite l'User-Agent
+function isBot(userAgent: string = ''): boolean {
+    const botPatterns = [
+        'bot', 'spider', 'crawler', 'peek', 'Read-Aloud',
+        'headless', 'preview', 'http://', 'https://',
+        'python', 'curl', 'wget', 'phantom', 'postman',
+        'slurp', 'lighthouse', 'selenium'
+    ];
+    return botPatterns.some(pattern => 
+        userAgent.toLowerCase().includes(pattern.toLowerCase())
+    );
+}
+
 // ----- Routes ----- //
 
 /**
@@ -157,32 +170,54 @@ app.get('/', (req, res) => {
  * Gestisce il join di un giocatore in una stanza esistente.
  */
 app.get('/room/:roomId', (req, res) => {
+    const userAgent = req.headers['user-agent'] || '';
+    const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+
+    logger.debug(`Join attempt - IP: ${clientIp}, UA: ${userAgent}`);
+
+    if (isBot(userAgent)) {
+        logger.warn(`Blocked bot attempt - IP: ${clientIp}, UA: ${userAgent}`);
+        return res.status(403).send('Access denied');
+    }
+
     const roomId = req.params.roomId;
     const session = req.session as any;
 
-    if (rooms.has(roomId)) {
-        const room = rooms.get(roomId)!;
-        if (room.players.size >= 8) {
-            return res.render('mobile', { title: "Room full", message: "Sorry, this room is already full.", type: "error" });
-        }
-    }
-
+    // Basic validations
     if (!rooms.has(roomId)) {
-        return res.render('mobile', { title: "Room not found", message: "The room you're trying to join doesn't exist.", type: "error" });
+        logger.debug(`Failed room join attempt from IP: ${clientIp}`);
+        return res.render('mobile', { 
+            title: "Room not found", 
+            message: "This room doesn't exist.", 
+            type: "error" 
+        });
     }
 
     const room = rooms.get(roomId)!;
 
+    // Check room state and capacity
     if (room.state !== GameState.Waiting) {
-        return res.render('mobile', { title: "Game in progress", message: "Sorry, this game has already started.", type: "error" });
+        return res.render('mobile', { 
+            title: "Game in progress", 
+            message: "This game has already started.", 
+            type: "error" 
+        });
     }
 
-    // Controlla se il giocatore è già nella stanza
+    if (room.players.size >= 8) {
+        return res.render('mobile', { 
+            title: "Room full", 
+            message: "This room is full.", 
+            type: "error" 
+        });
+    }
+
+    // Return existing player if they're already in
     if (session.playerId && room.players.has(session.playerId)) {
         const player = room.players.get(session.playerId)!;
         return res.render('mobile', {
-            title: `${player.name}, You're already in!`,
-            message: "You're already in this room, the game will begin shortly!",
+            title: `Welcome back, ${player.name}!`,
+            message: "You're already in this game.",
             type: "info",
             playerName: player.name,
             characterId: player.avatar,
@@ -190,9 +225,10 @@ app.get('/room/:roomId', (req, res) => {
         });
     }
 
-    // Crea un nuovo giocatore
+    // Create new player with unique session
     const playerName = getUniquePlayerName(room);
     const playerAvatar = getUniqueAvatar(room);
+    
     const player: Player = {
         id: req.sessionID,
         name: playerName,
@@ -200,20 +236,24 @@ app.get('/room/:roomId', (req, res) => {
         socketId: ''
     };
 
-    room.players.set(player.id, player);
-    logger.debug(`Player "${playerName}" joined room: ${roomId}`);
+    logger.debug(`New player "${playerName}" joined room: ${roomId} from IP: ${clientIp}`);
 
+    // Save player info
+    room.players.set(player.id, player);
     session.playerId = player.id;
     session.roomId = roomId;
     session.playerName = playerName;
 
+    // Notify host
     if (room.hostSocket) {
         io.to(room.hostSocket).emit('player-joined', player);
     }
 
-    res.render('mobile', {
-        title: `${playerName}, You're in!`,
-        message: "The game is about to start, hold on tight!",
+    logger.debug(`New player "${playerName}" joined room: ${roomId}`);
+
+    return res.render('mobile', {
+        title: `You're in, ${playerName}!`,
+        message: "Scan QR codes to answer questions!",
         type: "success",
         playerName: playerName,
         characterId: playerAvatar,
@@ -256,8 +296,20 @@ app.get('/room/:roomId/:answer', (req, res) => {
  * Gestisce la logica di connessione e disconnessione dei socket tramite Socket.IO.
  */
 io.on('connection', (socket: Socket) => {
+    const userAgent = socket.request.headers['user-agent'] || '';
+    const clientIp = socket.handshake.headers['x-forwarded-for'] || 
+                    socket.handshake.address;
+
+    if (isBot(userAgent)) {
+        logger.warn(`Blocked bot socket connection - IP: ${clientIp}, UA: ${userAgent}`);
+        socket.disconnect(true);
+        return;
+    }
+
+    logger.debug(`Socket connected - IP: ${clientIp}, UA: ${userAgent}`);
     const session = (socket.request as any).session;
-    logger.debug(`Socket connected: ${socket.id}`);
+                    
+    logger.debug(`Socket connected from IP: ${clientIp} - Socket ID: ${socket.id}`);
 
     // Evento per l'host che si unisce a una stanza
     socket.on('host-join', (roomId: string) => {
@@ -278,15 +330,24 @@ io.on('connection', (socket: Socket) => {
     socket.on('player-join', (roomId: string) => {
         if (rooms.has(roomId) && session.playerId) {
             const room = rooms.get(roomId)!;
-            if (room.state !== GameState.Waiting) {
-                socket.emit('game-in-progress');
+            
+            // Validate room state and capacity
+            if (room.state !== GameState.Waiting || room.players.size >= 8) {
+                socket.emit('join-failed');
                 return;
             }
+
+            // Check for existing socket connection
+            const existingPlayer = room.players.get(session.playerId);
+            if (existingPlayer && existingPlayer.socketId) {
+                // Disconnect old socket
+                io.sockets.sockets.get(existingPlayer.socketId)?.disconnect();
+            }
+
             const player = room.players.get(session.playerId);
             if (player) {
                 player.socketId = socket.id;
                 socket.join(roomId);
-                logger.debug(`Player ${player.name} socket joined room: ${roomId}`);
             }
         }
     });
@@ -335,7 +396,7 @@ io.on('connection', (socket: Socket) => {
                 }
             }
         }
-        logger.debug(`Socket disconnected: ${socket.id}`);
+        logger.debug(`Socket disconnected from IP: ${clientIp} - Socket ID: ${socket.id}`);
     });
 });
 
